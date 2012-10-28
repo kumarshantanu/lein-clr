@@ -47,14 +47,14 @@ or Mono.)
 
    ```clojure
    :clr {:compile-cmd [[CLJCLR14_40 "Clojure.Compile.exe"]]
-         :main-cmd    [[CLJCLR14_40 "Clojure.Main.exe"]]}
+          :main-cmd    [[CLJCLR14_40 "Clojure.Main.exe"]]}
    ```
 
    If you have Mono (on `PATH`) instead of .NET, just uncomment `#_"mono"` as follows:
 
    ```clojure
    :clr {:compile-cmd ["mono" [CLJCLR14_40 "Clojure.Compile.exe"]]
-         :main-cmd    ["mono" [CLJCLR14_40 "Clojure.Main.exe"]]}
+          :main-cmd    ["mono" [CLJCLR14_40 "Clojure.Main.exe"]]}
    ```
 
 5. Try the build tasks
