@@ -43,7 +43,7 @@ or Mono.)
    ```
 
 4. Edit `project.clj` to include the plugin; see 'Installation' above. Also, edit
-   the `:clr` section (optiional, for .NET) to remove `#_"mono"` as below in `project.clj`:
+   the `:clr` section (optional, for .NET) to remove `#_"mono"` as below in `project.clj`:
 
    ```clojure
    :clr {:compile-cmd [[CLJCLR14_40 "Clojure.Compile.exe"]]
