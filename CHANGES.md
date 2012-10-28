@@ -17,7 +17,7 @@
   * test (test selector support - doable??)
 
 
-## 2012-Oct-?? / 0.1.0
+## 2012-Oct-28 / 0.1.0
 
 * Tasks
   * clean
