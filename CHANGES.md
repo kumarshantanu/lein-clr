@@ -1,11 +1,11 @@
 # Changes and TODO
 
 
-## TODO / 0.2.0
+## TODO
 
 * Dependency support
   * Lein deps on CLOJURE_LOAD_PATH
-  * NuGet deps on CLOJURE_LOAD_PATH
+  * NuGet deps download + autodetect + load
 * C# compilation support
   * .NET -- :clr {:cs-compiler "csc"}
   * Mono -- :clr {:cs-compiler "gmcs"}
@@ -15,6 +15,16 @@
   * enable plugins written in ClojureCLR
 * Tasks
   * test (test selector support - doable??)
+
+
+## 2012-Nov-?? / 0.2.0
+
+* Project config support (`:clr` key in `project.clj`)
+  * Support for `:assembly-paths` (transparently calls `assembly-load-from`)
+  * [TODO] Dependency support
+    * Lein deps on CLOJURE_LOAD_PATH
+    * NuGet deps download + autodetect + load
+  * [TODO] fixes for `compile` task
 
 
 ## 2012-Oct-28 / 0.1.0
