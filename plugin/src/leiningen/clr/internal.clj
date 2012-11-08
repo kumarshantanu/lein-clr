@@ -205,3 +205,71 @@
       (vector? f) (str/join File/separator (map resolve-path f))
       :otherwise  (exit-error 1 "Expected string/symbol/vector, found "
                                 (pr-str f)))))
+
+
+(defn get-temp-file
+  []
+  (let [f (File/createTempFile "lein-clr-" ".tmp")]
+    (.deleteOnExit ^File f)
+    (doto (.getAbsolutePath ^File f)
+      (spit ""))))
+
+
+(defn as-vector
+  [x]
+  (cond (coll? x) (into [] x)
+        (seq? x)  (into [] x)
+        :default  [x]))
+
+
+(defn recursive-assembly-paths
+  ([dir parent-name-vec] {:pre [(or (instance? File dir) (string? dir))
+                                (vector? parent-name-vec)]}
+    (let [dir     (if (string? dir) (File. dir) dir)
+          dir-vec (conj parent-name-vec (.getName dir))
+          as-name #(str/join File/separator (conj dir-vec %))
+          entries (.listFiles ^File dir)
+          is-dll? (fn [^File f] (and (.isFile f)
+                                     (re-find #"\.([dD][lL][lL]|[eE][xX][eE])$"
+                                              (.getName f))))
+          d-files (map (comp as-name #(.getName %)) (filter is-dll? entries))
+          subdirs (filter #(.isDirectory ^File %) entries)]
+      (-> #(recursive-assembly-paths % dir-vec)
+          (mapcat subdirs)
+          (concat d-files))))
+  ([dir]
+    (recursive-assembly-paths dir [])))
+
+
+(defn filter-assembly-paths
+  [[base regex]]
+  (->> (recursive-assembly-paths base)
+       (filter (fn [name]
+                 (let [r (or regex #".*")]
+                   (if (re-find r name)
+                     (do (verbose "Including assembly file" name) true)
+                     (verbose "NOT including assembly file" name)))))))
+
+
+(defn spit-assembly-load-instruction
+  [temp-file assembly-paths]
+  (when (seq assembly-paths)
+    (let [content (->> assembly-paths
+                       (map (comp (partial format "(assembly-load-from %s)") pr-str))
+                       (str/join "\n"))]
+      (spit temp-file content
+            :append true))))
+
+
+(defn spit-require-ns
+  [temp-file nses]
+  (when (seq nses)
+    (spit temp-file (-> (partial format "\n(require '%s)")
+                        (map nses)
+                        str/join)
+          :append true)))
+
+
+(defn verbose-init-with
+  [temp-file]
+  (verbose "Initializing with:" (slurp temp-file)))
