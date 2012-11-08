@@ -24,7 +24,7 @@
   * [TODO] Dependency support
     * Lein deps on CLOJURE_LOAD_PATH
     * NuGet deps download + autodetect + load
-  * [TODO] fixes for `compile` task
+  * fixes for `compile` task
 
 
 ## 2012-Oct-28 / 0.1.0

@@ -40,6 +40,18 @@
        (concat (lc/get-classpath project))))
 
 
+(defn aot-namespaces
+  [project]
+  (let [aot-nses (or (get-in project [:clr :aot])
+                     (:aot project))
+        all-nses (mapcat in/scan-namespaces (all-load-paths project))]
+    (mapcat (fn [each]
+              (if (instance? java.util.regex.Pattern each)
+                (filter (partial re-matches each) all-nses)
+                [(str each)]))
+      aot-nses)))
+
+
 (defn assembly-search-paths
   [project]
   (->> (get-in project [:clr :assembly-paths])
@@ -85,7 +97,11 @@
   [project namespaces]
   (let [allp (all-load-paths project)
         srcp (concat (:source-paths project) (:test-paths project))
-        nses (if (seq namespaces) namespaces (mapcat in/scan-namespaces srcp))
+        nses (cond
+               (empty? namespaces)             (aot-namespaces project)
+               (and (= 1 (count namespaces))
+                (= ":all" (first namespaces))) (mapcat in/scan-namespaces srcp)
+               :otherwise                      namespaces)
         exec (concat (clj-compile-cmd project) nses)]
     (in/with-process-builder pb (:root project) exec
       (in/configure-load-path (.environment ^ProcessBuilder pb) allp)
