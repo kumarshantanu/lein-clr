@@ -15,16 +15,22 @@
   * enable plugins written in ClojureCLR
 * Tasks
   * test (test selector support - doable??)
+* Script support
+  * Executing scripts _a la_ lein-exec
 
 
 ## 2012-Nov-?? / 0.2.0
 
 * Project config support (`:clr` key in `project.clj`)
   * Support for `:assembly-paths` (transparently calls `assembly-load-from`)
-  * [TODO] Dependency support
-    * Lein deps on CLOJURE_LOAD_PATH
-    * NuGet deps download + autodetect + load
-  * fixes for `compile` task
+  * Command resolution
+    * Support searching within env-var value, e.g. `[*PATH "foo.exe"]`
+    * Command templates `:cmd-templates`
+* Dependency support
+  * [TODO] Maven dependencies on CLOJURE_LOAD_PATH
+  * Assembly dependencies (via NuGet etc.) -- `:deps-cmds` `:deps-regex`
+* Fixes for `compile` task
+* [TODO] sample.project.clj with config options
 
 
 ## 2012-Oct-28 / 0.1.0

@@ -9,22 +9,38 @@
            (java.util Map)))
 
 
-(defn exit-error
-  ([code msg & more] {:pre [(pos? code)]}
-    (binding [*out* *err*]
-      (apply println msg more))
-    (lm/abort code))
-  ([code] {:pre [(pos? code)]}
-    (lm/abort code)))
-
-
 (def ^:dynamic *verbose* false)
 
 
 (defn verbose
   [x & args]
   (when *verbose*
-    (apply println x args)))
+    (apply println "[DEBUG]" x args))
+  (flush))
+
+
+(defn warn
+  [x & args]
+  (when *verbose*
+    (apply println "\n[WARNING!]" x args "\n"))
+  (flush))
+
+
+(defn exit-error
+  ([code msg & more] {:pre [(pos? code)]}
+    (binding [*out* *err*]
+      (apply println "\n[ERROR]" msg more)
+      (flush))
+    (lm/abort code))
+  ([code] {:pre [(pos? code)]}
+    (lm/abort code)))
+
+
+(defn echo
+  [x]
+  (println "[--ECHO--]" x)
+  (flush)
+  x)
 
 
 (defn sleep
@@ -195,15 +211,91 @@
      ~@body))
 
 
-(defn resolve-path
+(defn run-cmd
+  [exec root]
+  (verbose "Running" exec)
+  (with-process-builder
+    pb root exec
+    (run-process pb)))
+
+
+(defn resolve-template
+  [template args]
+  (if (vector? template)
+    (-> (fn [each]
+          (if (symbol? each)
+            (let [[pc & digits :as sym] (name each)]
+              (if (= \% pc)
+                (let [num (if (seq digits)
+                              (Integer/parseInt (str/join digits))
+                              1)]
+                  (nth args (dec num)))
+                each))
+            each))
+        (map template)
+        vec)
+    ;; fallback
+    template))
+
+
+(defn resolve-path-str
+  "Convert path to string and return it."
   [f]
-  (let []
+  (cond
+    (symbol? f) (or (System/getenv (name f))
+                    (exit-error 1 "No such environment variable:" (name f)))
+    (string? f) f
+    (vector? f) (str/join File/separator
+                          (map resolve-path-str f))
+    :otherwise  (exit-error 1 "Expected string/symbol/vector, found"
+                                (pr-str f))))
+
+
+(defn resolve-path
+  "If you supply a vector of args, you get back a vector.
+  See also:
+    resolve-path-str"
+  [f template-map]
+  (let [path-search (fn [[path file]]
+                      (let [file (resolve-path-str (vector file))
+                            path (resolve-path-str (-> (rest (name path))
+                                                       str/join
+                                                       symbol))]
+                          (or (which file path)
+                              (exit-error 1 "Cannot locate" file "in" path))))
+        templ-subst (fn [f]
+                      (let [left   (take-while (comp not keyword?) f)
+                            needle (nth f (count left))
+                            right  (drop (inc (count left)) f)]
+                        (when-not (contains? template-map needle)
+                          (exit-error 1 "Template key" needle "not found in"
+                                      (pr-str template-map)))
+                        (resolve-path
+                          (->> (resolve-template (get template-map needle) right)
+                               (concat left)
+                               vec)
+                          template-map)))]
     (cond
-      (symbol? f) (or (.get ^Map (System/getenv) (name f))
-                      (exit-error 1 "No such environment variable: " (name f)))
+      (symbol? f) (or (System/getenv (name f))
+                      (exit-error 1 "No such environment variable:" (name f)))
       (string? f) f
-      (vector? f) (str/join File/separator (map resolve-path f))
-      :otherwise  (exit-error 1 "Expected string/symbol/vector, found "
+      (vector? f) (cond
+                    ;; path search
+                    (and (= 2 (count f))
+                         (symbol? (first f))
+                         (let [[p1 & the-name] (seq (name (first f)))]
+                           (and (= \* p1) (seq the-name))))
+                    (path-search f)
+                    ;; template substitution
+                    (some keyword? f)
+                    (templ-subst f)
+                    ;; fallback (regular) resolution
+                    :otherwise
+                    (->> (map #(resolve-path % template-map) f)
+                         (map resolve-path-str)
+                         flatten
+                         vec))
+      :otherwise  (exit-error 1 "Expected string/symbol/vector, found"
                                 (pr-str f)))))
 
 
@@ -226,15 +318,14 @@
   ([dir parent-name-vec] {:pre [(or (instance? File dir) (string? dir))
                                 (vector? parent-name-vec)]}
     (let [dir     (if (string? dir) (File. dir) dir)
-          dir-vec (conj parent-name-vec (.getName dir))
-          as-name #(str/join File/separator (conj dir-vec %))
+          as-name #(str/join File/separator (conj parent-name-vec %))
           entries (.listFiles ^File dir)
           is-dll? (fn [^File f] (and (.isFile f)
                                      (re-find #"\.([dD][lL][lL]|[eE][xX][eE])$"
                                               (.getName f))))
           d-files (map (comp as-name #(.getName %)) (filter is-dll? entries))
           subdirs (filter #(.isDirectory ^File %) entries)]
-      (-> #(recursive-assembly-paths % dir-vec)
+      (-> #(recursive-assembly-paths % (conj parent-name-vec (.getName %)))
           (mapcat subdirs)
           (concat d-files))))
   ([dir]
@@ -248,7 +339,8 @@
                  (let [r (or regex #".*")]
                    (if (re-find r name)
                      (do (verbose "Including assembly file" name) true)
-                     (verbose "NOT including assembly file" name)))))))
+                     (verbose "NOT including assembly file" name)))))
+       (map (partial str base File/separator))))
 
 
 (defn spit-assembly-load-instruction

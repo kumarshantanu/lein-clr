@@ -9,67 +9,25 @@
            (java.util Map)))
 
 
-(defn proj-key-cmd
-  "Return a sequence of command and arguments"
-  [proj-key default-value project]
-  (or (when-let [cmd (get-in project proj-key)]
-        (assert (vector? cmd)) (vec (map in/resolve-path cmd)))
-      default-value))
+;; ===== Project keys =====
+
+(def pk-target-path    [:clr :target-path])
+(def pk-cmd-templates  [:clr :cmd-templates])
+(def pk-compile-cmd    [:clr :compile-cmd])
+(def pk-main-cmd       [:clr :main-cmd])
+(def pk-assembly-paths [:clr :assembly-paths])
+(def pk-deps-cmds      [:clr :deps-cmds])
+(def pk-deps-regex     [:clr :deps-regex])
+(def pk-load-paths     [:clr :load-paths])
+
+(def pk-aot [:clr :aot])
 
 
-(defn default-cmd
-  [^String cmd] {:pre [(string? cmd)]}
-  (let [^String os-name (System/getProperty "os.name")]
-    (if (and os-name (.startsWith ^String os-name "Windows"))
-      [cmd]
-      ["mono" (or (in/which cmd) cmd)])))
-
-
-(def clj-compile-cmd (partial proj-key-cmd [:clr :compile-cmd]
-                              (default-cmd "Clojure.Compile.exe")))
-
-
-(def clj-main-cmd (partial proj-key-cmd [:clr :main-cmd]
-                           (default-cmd "Clojure.Main.exe")))
-
-
-(defn all-load-paths
-  [project]
-  (->> (get-in project [:clr :load-paths])
-       (map in/resolve-path)
-       (concat (lc/get-classpath project))))
-
-
-(defn aot-namespaces
-  [project]
-  (let [aot-nses (or (get-in project [:clr :aot])
-                     (:aot project))
-        all-nses (mapcat in/scan-namespaces (all-load-paths project))]
-    (mapcat (fn [each]
-              (if (instance? java.util.regex.Pattern each)
-                (filter (partial re-matches each) all-nses)
-                [(str each)]))
-      aot-nses)))
-
-
-(defn assembly-search-paths
-  [project]
-  (->> (get-in project [:clr :assembly-paths])
-       (map in/as-vector)
-       (mapcat in/filter-assembly-paths)))
-
-
-(defn asm-load-init
-  [project init-file]
-  (in/spit-assembly-load-instruction
-    init-file
-    (assembly-search-paths project))
-  init-file)
-
+;; ===== Target paths =====
 
 (defn target-path
   [project]
-  (or (get-in project [:clr :target-path])
+  (or (get-in project pk-target-path)
       (str (:target-path project) File/separator "clr")))
 
 
@@ -81,6 +39,95 @@
 (defn target-lib-path
   [project]
   (str (target-path project) File/separator "lib"))
+
+
+;; ===== Project keys =====
+
+(defn cmd-templates
+  [project]
+  (get-in project pk-cmd-templates))
+
+
+(defn proj-key-cmd
+  "Return a sequence of command and arguments"
+  [proj-key default-value project]
+  (or (when-let [cmd (get-in project proj-key)]
+        (assert (vector? cmd))
+        (in/resolve-path cmd (cmd-templates project)))
+      default-value))
+
+
+(defn default-cmd
+  [^String cmd] {:pre [(string? cmd)]}
+  (let [^String os-name (System/getProperty "os.name")]
+    (if (and os-name (.startsWith ^String os-name "Windows"))
+      [cmd]
+      ["mono" (or (in/which cmd) cmd)])))
+
+
+(def clj-compile-cmd (partial proj-key-cmd pk-compile-cmd
+                              (default-cmd "Clojure.Compile.exe")))
+
+
+(def clj-main-cmd (partial proj-key-cmd pk-main-cmd
+                           (default-cmd "Clojure.Main.exe")))
+
+
+(defn all-load-paths
+  [project]
+  (let [load-paths (get-in project pk-load-paths)]
+    (when load-paths
+      (in/warn "[:clr :load-paths] is deprecated and will be discontinued soon. Consider using :resource-paths"))
+    (->> load-paths
+         (map #(in/resolve-path % (cmd-templates project)))
+         (concat (lc/get-classpath project)))))
+
+
+(defn aot-namespaces
+  [project]
+  (let [aot-nses (or (get-in project pk-aot)
+                     (:aot project))
+        all-nses (mapcat in/scan-namespaces (all-load-paths project))]
+    (mapcat (fn [each]
+              (if (instance? java.util.regex.Pattern each)
+                (filter (partial re-matches each) all-nses)
+                [(str each)]))
+      aot-nses)))
+
+
+(defn fetch-deps
+  "Fetch dependencies by running commands. Do not fetch if already fetched earlier."
+  [project]
+  (let [lib  (target-lib-path project)
+        cmds (get-in project pk-deps-cmds)]
+    (if (and (not (.exists (File. lib)))
+             (seq cmds))
+      (do
+        (in/verbose "Making sure" lib "exists")
+        (in/mkdir-p lib)
+        (in/verbose "Fetching dependencies" cmds)
+        (->> cmds
+             (map #(in/resolve-path % (cmd-templates project)))
+             (map #(in/run-cmd % lib))
+             dorun))
+      (in/verbose "Not fetching dependencies. Run `lein clean` to re-fetch."))))
+
+
+(defn assembly-search-paths
+  [project]
+  (->> (get-in project pk-assembly-paths)
+       (map in/as-vector)
+       (concat [[(target-lib-path project) (get-in project pk-deps-regex)]])
+       (mapcat in/filter-assembly-paths)))
+
+
+(defn asm-load-init
+  [project init-file]
+  (fetch-deps project)
+  (in/spit-assembly-load-instruction
+    init-file
+    (assembly-search-paths project))
+  init-file)
 
 
 ;;; ========== Tasks ==========
@@ -121,14 +168,6 @@ help     show this help screen
 repl     load a REPL with sources into CLOJURE_LOAD_PATH
 run      run a namespace having `-main` function
 test     run tests in specified/all test namespaces
-
-Project configuration (in `project.clj`):
-:clr {:compile-cmd [\"Clojure.Compile.exe\"] ; .NET default, Mono example below
-      :main-cmd    [\"mono\" [CLJCLR14_PATH \"Clojure.Main.exe\"]]
-      :assembly-paths [[\"ext/foo\" #\".*[Nn]et40.*\"]
-                       \"ext/baaz\"]
-      :load-paths  [CLJCLR14_40 NHIBERNATE_PATH]
-      :target-path  \"path/to/clr-build/files\"}
 "))
 
 
