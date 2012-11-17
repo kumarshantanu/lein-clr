@@ -11,14 +11,14 @@
 
 ;; ===== Project keys =====
 
-(def pk-target-path    [:clr :target-path])
-(def pk-cmd-templates  [:clr :cmd-templates])
-(def pk-compile-cmd    [:clr :compile-cmd])
-(def pk-main-cmd       [:clr :main-cmd])
-(def pk-assembly-paths [:clr :assembly-paths])
-(def pk-deps-cmds      [:clr :deps-cmds])
-(def pk-deps-regex     [:clr :deps-regex])
-(def pk-load-paths     [:clr :load-paths])
+(def pk-target-path         [:clr :target-path])
+(def pk-cmd-templates       [:clr :cmd-templates])
+(def pk-compile-cmd         [:clr :compile-cmd])
+(def pk-main-cmd            [:clr :main-cmd])
+(def pk-assembly-paths      [:clr :assembly-paths])
+(def pk-deps-cmds           [:clr :deps-cmds])
+(def pk-assembly-deps-regex [:clr :assembly-deps-regex])
+(def pk-load-paths          [:clr :load-paths])
 
 (def pk-aot [:clr :aot])
 
@@ -117,7 +117,8 @@
   [project]
   (->> (get-in project pk-assembly-paths)
        (map in/as-vector)
-       (concat [[(target-lib-path project) (get-in project pk-deps-regex)]])
+       (concat [[(target-lib-path project)
+                 (get-in project pk-assembly-deps-regex)]])
        (mapcat in/filter-assembly-paths)))
 
 

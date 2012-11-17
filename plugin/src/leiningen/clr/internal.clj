@@ -191,14 +191,14 @@
   ;; include source paths into CLOJURE_LOAD_PATH
   (let [clp (str/join File/pathSeparator paths)]
     (.put ^Map process-env CLOJURE_LOAD_PATH clp)
-    (verbose "Using CLOJURE_LOAD_PATH: " clp)))
+    (verbose "Using CLOJURE_LOAD_PATH:" clp)))
 
 
 (defn configure-compile-path
   [^Map process-env target-path] {:pre [(string? target-path)]}
   ;; set CLOJURE_COMPILE_PATH to the target path
   (.put process-env CLOJURE_COMPILE_PATH target-path)
-  (verbose "Using CLOJURE_COMPILE_PATH: " target-path)
+  (verbose "Using CLOJURE_COMPILE_PATH:" target-path)
   (mkdir-p target-path))
 
 
@@ -207,7 +207,7 @@
   `(let [^ProcessBuilder ~pb-symbol (ProcessBuilder. ~cmd-and-args)]
      ;; set project-root
      (.directory ^ProcessBuilder ~pb-symbol (File. ~base-dir))
-     (verbose "Using base directory: " ~base-dir)
+     (verbose "Using base directory:" ~base-dir)
      ~@body))
 
 
