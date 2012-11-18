@@ -269,13 +269,16 @@
                                                        symbol))]
                           (or (which file path)
                               (exit-error 1 "Cannot locate" file "in" path))))
+        assert-tkey (fn [needle]
+                      (when-not (contains? template-map needle)
+                        (exit-error 1 "Template key" needle "not found in"
+                                    (pr-str template-map))))
         templ-subst (fn [f]
                       (let [left   (take-while (comp not keyword?) f)
                             needle (nth f (count left))
-                            right  (drop (inc (count left)) f)]
-                        (when-not (contains? template-map needle)
-                          (exit-error 1 "Template key" needle "not found in"
-                                      (pr-str template-map)))
+                            right  (->> (drop (inc (count left)) f)
+                                        (map #(resolve-path %1 template-map)))]
+                        (assert-tkey needle)
                         (resolve-path
                           (->> (resolve-template (get template-map needle) right)
                                (concat left)
@@ -284,6 +287,8 @@
     (cond
       (symbol? f) (or (System/getenv (name f))
                       (exit-error 1 "No such environment variable:" (name f)))
+      (keyword? f) (do (assert-tkey f)
+                       (get template-map f))
       (string? f) f
       (vector? f) (cond
                     ;; path search
