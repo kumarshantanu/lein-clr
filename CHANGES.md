@@ -28,12 +28,13 @@
     * Support searching within env-var value, e.g. `[*PATH "foo.exe"]`
     * Command templates `:cmd-templates`
 * Dependency support
-  * [TODO] Maven dependencies on CLOJURE_LOAD_PATH
+  * Maven dependencies on CLOJURE_LOAD_PATH
   * Command-based dependencies (via NuGet etc.) -- `:deps-cmds`
   * Assembly deps regex `:assembly-deps-regex` to match versions/types
     * transparently calls `assembly-load-from` for matching assemblies
 * Fixes for `compile` task
 * [TODO] sample.project.clj with config options
+* [TODO] Updated Leiningen-project template
 
 
 ## 2012-Oct-28 / 0.1.0
@@ -49,3 +50,4 @@
   * Mono support: `:compile-cmd` and `:main-cmd`
   * External libraries support: `:load-paths`
   * Support for multiple ClojureCLR versions via env-var lookup
+* Leiningen-project template to generate skeleton project

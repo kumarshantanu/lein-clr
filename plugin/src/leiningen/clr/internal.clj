@@ -6,7 +6,8 @@
   (:import (java.io File
   	                Reader BufferedReader InputStream InputStreamReader
                     OutputStream Writer)
-           (java.util Map)))
+           (java.util     Enumeration Map)
+           (java.util.zip ZipEntry ZipFile)))
 
 
 (def ^:dynamic *verbose* false)
@@ -376,3 +377,22 @@
 (defn verbose-init-with
   [temp-file]
   (verbose "Initializing with:" (slurp temp-file)))
+
+
+(defn unzip-file
+  [zip-filename dest regex] {:pre [(string? zip-filename)
+                                   (string? dest)]}
+  (with-open [^ZipFile zip-file (ZipFile. zip-filename)]
+    (let [^Enumeration zip-entries (.entries zip-file)]
+      (while (.hasMoreElements zip-entries)
+        (let [^ZipEntry entry (.nextElement zip-entries)
+              ^String   ename (.getName entry)
+              ^String   epath (str dest File/separator ename)]
+          (when (re-find regex ename)
+            (if (.isDirectory entry)
+              (do (verbose "Creating directory:" ename)
+                (mkdir-p epath))
+              (do (verbose "Extracting file:" ename)
+                (mkdir-p (.getParentFile (File. epath)))
+                (io/copy (.getInputStream zip-file entry)
+                         (io/file epath))))))))))

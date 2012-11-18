@@ -41,6 +41,11 @@
   (str (target-path project) File/separator "lib"))
 
 
+(defn target-src-path
+  [project]
+  (str (target-path project) File/separator "src"))
+
+
 ;; ===== Project keys =====
 
 (defn cmd-templates
@@ -80,7 +85,8 @@
       (in/warn "[:clr :load-paths] is deprecated and will be discontinued soon. Consider using :resource-paths"))
     (->> load-paths
          (map #(in/resolve-path % (cmd-templates project)))
-         (concat (lc/get-classpath project)))))
+         (concat (lc/get-classpath project)
+                 [(target-src-path project)]))))
 
 
 (defn aot-namespaces
@@ -96,12 +102,13 @@
 
 
 (defn fetch-deps
-  "Fetch dependencies by running commands. Do not fetch if already fetched earlier."
+  "Fetch dependencies. Do not fetch if already fetched earlier."
   [project]
-  (let [lib  (target-lib-path project)
-        cmds (get-in project pk-deps-cmds)]
-    (if (and (not (.exists (File. lib)))
-             (seq cmds))
+  (let [lib   (target-lib-path project)
+        src   (target-src-path project)
+        src-p #"^((?!project\.clj|META\-INF|.*\.class|cljs/|.*\.cljs).*)$"
+        cmds  (get-in project pk-deps-cmds)]
+    (if-not (.exists (File. lib))
       (do
         (in/verbose "Making sure" lib "exists")
         (in/mkdir-p lib)
@@ -109,6 +116,11 @@
         (->> cmds
              (map #(in/resolve-path % (cmd-templates project)))
              (map #(in/run-cmd % lib))
+             dorun)
+        (in/verbose "Extracting JAR dependencies")
+        (->> (lc/get-classpath project)
+             (filter #(.isFile (File. %)))
+             (map #(in/unzip-file % src src-p))
              dorun))
       (in/verbose "Not fetching dependencies. Run `lein clean` to re-fetch."))))
 
