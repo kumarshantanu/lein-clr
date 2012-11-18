@@ -21,8 +21,7 @@
 
 (defn warn
   [x & args]
-  (when *verbose*
-    (apply println "\n[WARNING!]" x args "\n"))
+  (apply println "\n[WARNING!]" x args "\n")
   (flush))
 
 
@@ -223,7 +222,9 @@
   [template args]
   (if (vector? template)
     (-> (fn [each]
-          (if (symbol? each)
+          (cond
+            ;; symbol
+            (symbol? each)
             (let [[pc & digits :as sym] (name each)]
               (if (= \% pc)
                 (let [num (if (seq digits)
@@ -231,6 +232,11 @@
                               1)]
                   (nth args (dec num)))
                 each))
+            ;; vector
+            (vector? each)
+            (resolve-template each args)
+            ;; fallback
+            :otherwise
             each))
         (map template)
         vec)

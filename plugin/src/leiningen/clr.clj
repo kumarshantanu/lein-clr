@@ -124,7 +124,6 @@
 
 (defn asm-load-init
   [project init-file]
-  (fetch-deps project)
   (in/spit-assembly-load-instruction
     init-file
     (assembly-search-paths project))
@@ -143,6 +142,7 @@
 
 (defn task-compile
   [project namespaces]
+  (fetch-deps project)
   (let [allp (all-load-paths project)
         srcp (concat (:source-paths project) (:test-paths project))
         nses (cond
@@ -174,6 +174,7 @@ test     run tests in specified/all test namespaces
 
 (defn task-repl
   [project]
+  (fetch-deps project)
   (let [init-file  (asm-load-init project (in/get-temp-file))
         allp (all-load-paths project)
         _    (in/verbose-init-with init-file)
@@ -201,6 +202,7 @@ test     run tests in specified/all test namespaces
 
 (defn task-run
   [project args]
+  (fetch-deps project)
   (let [init-file  (asm-load-init project (in/get-temp-file))
         allp       (all-load-paths project)
         [rns args] (parse-run-args project args)
@@ -215,6 +217,7 @@ test     run tests in specified/all test namespaces
 
 (defn task-test
   [project namespaces]
+  (fetch-deps project)
   (let [init-file (asm-load-init project (in/get-temp-file))
         allp (all-load-paths project)
         nses (mapcat in/scan-namespaces (:test-paths project))
@@ -247,7 +250,7 @@ test     run tests in specified/all test namespaces
   [project & [task & args]]
   (case task
     "clean"   (task-clean project)
-    "compile" (task-compile project args)
+    "compile" (try-pst (task-compile project args))
     "help"    (task-help)
     "repl"    (try-pst (task-repl project))
     "run"     (try-pst (task-run  project args))
