@@ -8,6 +8,8 @@
   [name]
   (let [data {:name name
               :sanitized (name-to-path name)}]
+    (println "Generating a skeleton ClojureCLR project"
+             (str name "..."))
     (->files data
              ["src/{{sanitized}}/core.clj"       (render "core.clj"      data)]
              ["test/{{sanitized}}/core_test.clj" (render "core_test.clj" data)]
