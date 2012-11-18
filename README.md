@@ -111,7 +111,7 @@ lein clr [-v] test [test-ns1 [test-ns2] ...]
 
 `lein-clr` uses some regular attributes from `project.clj` for build tasks.
 Besides, there are some specific attributes you can refer to in the
-`sample.project.properties` file in this repo.
+`sample.project.clj` file in this repo.
 
 
 ## Getting in touch
