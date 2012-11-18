@@ -12,7 +12,7 @@ Leiningen 2 is required to use this plugin. You can use it for both .NET and Mon
 Install as a project level plugin in `project.clj`:
 
 ```clojure
-:plugins [[lein-clr "0.1.0"]]
+:plugins [[lein-clr "0.2.0"]]
 ```
 
 **Note:** `lein-clr` redefines the environment variables `CLOJURE_LOAD_PATH`
@@ -21,7 +21,36 @@ and `CLOJURE_COMPILE_PATH` internally ignoring their original values.
 
 ## Usage
 
-### Quickstart (in 5 steps)
+### Quickstart in 3 steps -- you must have `curl`/`wget` and `unzip` on `PATH`
+
+(Assuming you are on Windows with a recent version of the .NET framework or Mono.
+If you do not have `curl`/`wget` and `unzip` on PATH, consider _Quickstart in 5 steps_
+below.)
+
+1. Create a new Leiningen project
+
+    ```batch
+    C:\work> lein new lein-clr foo
+    C:\work> cd foo
+    ```
+
+2. The default `project.clj` does not enable auto download of ClojureCLR. Enable that
+   by editing `project.clj` under :clr as follows:
+   * (Optional) To use Mono edit `#_"mono"` as `"mono"` under `:cmd-templates/:clj-dep`
+   * Uncomment `[:wget :clj-zip :clj-url]` and `[:unzip "../clj" :clj-zip]` under `:deps-cmds`.
+   * Under `:main-cmd` and `:compile-cmd` replace `:clj-exe` with `:clj-dep`.
+
+3. Run the build tasks
+
+    ```batch
+    C:\work\foo> lein clr test
+    C:\work\foo> lein clr run -m foo.core
+    C:\work=foo> lein clr -v compile foo.core
+    ```
+
+--------
+
+### Quickstart in 5 steps
 
 (Assuming you are on Windows with a recent version of the .NET framework
 or Mono.)
@@ -42,19 +71,17 @@ or Mono.)
    C:\work> cd foo
    ```
 
-4. Edit `project.clj` to include the plugin; see 'Installation' above. Also, edit
-   the `:clr` section (optional, for .NET) to remove `#_"mono"` as below in `project.clj`:
+4. Edit the `:clr/:cmd-templates` section (optional for .NET) in `project.clj`
+   to remove `#_"mono"` as shown below:
 
    ```clojure
-   :clr {:compile-cmd [[CLJCLR14_40 "Clojure.Compile.exe"]]
-          :main-cmd    [[CLJCLR14_40 "Clojure.Main.exe"]]}
+   :clj-exe [[CLJCLR14_40 %1]]
    ```
 
    If you have Mono (on `PATH`) instead of .NET, just uncomment `#_"mono"` as follows:
 
    ```clojure
-   :clr {:compile-cmd ["mono" [CLJCLR14_40 "Clojure.Compile.exe"]]
-          :main-cmd    ["mono" [CLJCLR14_40 "Clojure.Main.exe"]]}
+   :clj-exe ["mono" [CLJCLR14_40 %1]]
    ```
 
 5. Try the build tasks
@@ -82,15 +109,9 @@ lein clr [-v] test [test-ns1 [test-ns2] ...]
 
 ### Project configuration
 
-`lein-clr` uses the regular attributes from `project.clj` for build tasks.
-Besides, there are some specific attributes you can specify as folows:
-
-```clojure
-:clr {:compile-cmd ["Clojure.Compile.exe"]    ; .NET default (on PATH)
-      :main-cmd    ["mono" [CLJCLR14_40 "Clojure.Main.exe"]] ; Mono
-      :load-paths  ["lib/fu" BAR [NH "lib/Net35"]]           ; 3 paths
-      :target-path "target/clr"}
-```
+`lein-clr` uses some regular attributes from `project.clj` for build tasks.
+Besides, there are some specific attributes you can refer to in the
+`sample.project.properties` file in this repo.
 
 
 ## Getting in touch
