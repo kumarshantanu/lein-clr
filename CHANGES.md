@@ -3,9 +3,6 @@
 
 ## TODO
 
-* Dependency support
-  * Lein deps on CLOJURE_LOAD_PATH
-  * NuGet deps download + autodetect + load
 * C# compilation support
   * .NET -- :clr {:cs-compiler "csc"}
   * Mono -- :clr {:cs-compiler "gmcs"}
@@ -34,7 +31,7 @@
     * transparently calls `assembly-load-from` for matching assemblies
 * Fixes for `compile` task
 * [TODO] sample.project.clj with config options
-* [TODO] Updated Leiningen-project template
+* Updated Leiningen-project template
 
 
 ## 2012-Oct-28 / 0.1.0
