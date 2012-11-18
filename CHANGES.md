@@ -16,7 +16,7 @@
   * Executing scripts _a la_ lein-exec
 
 
-## 2012-Nov-?? / 0.2.0
+## 2012-Nov-19 / 0.2.0
 
 * Project config support (`:clr` key in `project.clj`)
   * Support for `:assembly-paths`
@@ -30,7 +30,7 @@
   * Assembly deps regex `:assembly-deps-regex` to match versions/types
     * transparently calls `assembly-load-from` for matching assemblies
 * Fixes for `compile` task
-* [TODO] sample.project.clj with config options
+* sample.project.clj with config options
 * Updated Leiningen-project template
 
 
