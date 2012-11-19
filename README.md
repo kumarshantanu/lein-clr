@@ -21,7 +21,7 @@ and `CLOJURE_COMPILE_PATH` internally ignoring their original values.
 
 ## Usage
 
-### Quickstart in 3 steps -- you must have `curl`/`wget` and `unzip` on `PATH`
+### Quickstart in 3 steps -- requires `curl`/`wget` and `unzip` on `PATH`
 
 (Assuming you are on Windows with a recent version of the .NET framework or Mono.
 If you do not have `curl`/`wget` and `unzip` on PATH, consider _Quickstart in 5 steps_
@@ -35,7 +35,7 @@ below.)
     ```
 
 2. The default `project.clj` does not enable auto download of ClojureCLR. Enable that
-   by editing `project.clj` under :clr as follows:
+   by editing `project.clj` under `:clr` as follows:
    * (Optional) To use Mono edit `#_"mono"` as `"mono"` under `:cmd-templates/:clj-dep`
    * Uncomment `[:wget :clj-zip :clj-url]` and `[:unzip "../clj" :clj-zip]` under `:deps-cmds`.
    * Under `:main-cmd` and `:compile-cmd` replace `:clj-exe` with `:clj-dep`.
