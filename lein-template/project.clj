@@ -1,4 +1,4 @@
-(defproject lein-clr/lein-template "0.2.0"
+(defproject lein-clr/lein-template "0.3.0-SNAPSHOT"
   :description "Template for ClojureCLR project built by lein-clr"
   :url "https://github.com/kumarshantanu/lein-clr"
   :license {:name "Eclipse Public License"
