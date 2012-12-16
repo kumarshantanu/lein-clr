@@ -184,6 +184,8 @@
 
 (def CLOJURE_LOAD_PATH    "CLOJURE_LOAD_PATH")
 (def CLOJURE_COMPILE_PATH "CLOJURE_COMPILE_PATH")
+(def CLOJURE_COMPILE_UNCHECKED_MATH "CLOJURE_COMPILE_UNCHECKED_MATH")
+(def CLOJURE_COMPILE_WARN_ON_REFLECTION "CLOJURE_COMPILE_WARN_ON_REFLECTION")
 
 
 (defn configure-load-path
@@ -200,6 +202,20 @@
   (.put process-env CLOJURE_COMPILE_PATH target-path)
   (verbose "Using CLOJURE_COMPILE_PATH:" target-path)
   (mkdir-p target-path))
+
+
+(defn configure-unchecked-math
+  [^Map process-env flag]
+  (when flag
+    (.put process-env CLOJURE_COMPILE_UNCHECKED_MATH "true")
+    (verbose "Using CLOJURE_COMPILE_UNCHECKED_MATH:" "true")))
+
+
+(defn configure-warn-on-reflection
+  [^Map process-env flag]
+  (when flag
+    (.put process-env CLOJURE_COMPILE_WARN_ON_REFLECTION "true")
+    (verbose "Using CLOJURE_COMPILE_WARN_ON_REFLECTION:" "true")))
 
 
 (defmacro with-process-builder

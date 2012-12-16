@@ -3,9 +3,6 @@
 
 ## TODO
 
-* C# compilation support
-  * .NET -- :clr {:cs-compiler "csc"}
-  * Mono -- :clr {:cs-compiler "gmcs"}
 * CLR re-implementation (of Leiningen features)
   * eval-in-project
   * bultitude(??)
@@ -14,6 +11,15 @@
   * test (test selector support - doable??)
 * Script support
   * Executing scripts _a la_ lein-exec
+
+
+## 2012-Dec-?? / 0.3.0
+
+* Honor `[:clr :unchecked-math]`
+* Honor `[:clr :warn-on-reflection]` and `:warn-on-reflection`
+* [TODO] `deps` as implicit as well as a named task invokable at command line
+* [TODO] `compile` as implicit as well as named task invokable at command line
+* [TODO] Pre-compile and Post-compile commands; to compile C#, F# etc. sources
 
 
 ## 2012-Nov-19 / 0.2.0

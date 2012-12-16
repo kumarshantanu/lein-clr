@@ -19,6 +19,8 @@
 (def pk-deps-cmds           [:clr :deps-cmds])
 (def pk-assembly-deps-regex [:clr :assembly-deps-regex])
 (def pk-load-paths          [:clr :load-paths])
+(def pk-unchecked-math      [:clr :unchecked-math])
+(def pk-warn-on-reflection  [:clr :warn-on-reflection])
 
 (def pk-aot [:clr :aot])
 
@@ -139,6 +141,11 @@
   (in/spit-assembly-load-instruction
     init-file
     (assembly-search-paths project))
+  (when (get-in project pk-unchecked-math)
+    (spit init-file "\n(set! *unchecked-math* true)" :append true))
+  (when (or (get-in project pk-warn-on-reflection)
+            (:warn-on-reflection project))
+    (spit init-file "\n(set! *warn-on-reflection* true)" :append true))
   init-file)
 
 
@@ -164,9 +171,14 @@
                :otherwise                      namespaces)
         exec (concat (clj-compile-cmd project) nses)]
     (in/with-process-builder pb (:root project) exec
-      (in/configure-load-path (.environment ^ProcessBuilder pb) allp)
-      (in/configure-compile-path (.environment ^ProcessBuilder pb)
-                                 (target-bin-path project))
+      (let [^Map penv (.environment ^ProcessBuilder pb)]
+        (in/configure-load-path penv allp)
+        (in/configure-compile-path penv (target-bin-path project))
+        (->> (get-in project pk-unchecked-math)
+          (in/configure-unchecked-math penv))
+        (->> (:warn-on-reflection project)
+          (or (get-in project pk-warn-on-reflection))
+          (in/configure-warn-on-reflection penv)))
       (apply in/verbose "Running: " (map pr-str exec))
       (in/run-process pb))))
 
