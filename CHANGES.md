@@ -17,9 +17,10 @@
 
 * Honor `[:clr :unchecked-math]`
 * Honor `[:clr :warn-on-reflection]` and `:warn-on-reflection`
-* [TODO] `deps` as implicit as well as a named task invokable at command line
+* `deps` as implicit as well as a named task invokable at command line
 * [TODO] `compile` as implicit as well as named task invokable at command line
 * [TODO] Pre-compile and Post-compile commands; to compile C#, F# etc. sources
+* [TODO] Load compiled assemblies into assembly search path
 
 
 ## 2012-Nov-19 / 0.2.0
