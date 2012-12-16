@@ -4,8 +4,9 @@
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies []
+  :warn-on-reflection true
   :min-lein-version "2.0.0"
-  :plugins [[lein-clr "0.2.0"]]
+  :plugins [[lein-clr "0.3.0-SNAPSHOT"]]
   :clr {:cmd-templates  {:clj-exe   [#_"mono" [CLJCLR14_40 %1]]
                          :clj-dep   [#_"mono" ["target/clr/clj/Debug 4.0" %1]]
                          :clj-url   "https://github.com/downloads/clojure/clojure-clr/clojure-clr-1.4.0-Debug-4.0.zip"
