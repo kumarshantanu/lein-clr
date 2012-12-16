@@ -112,14 +112,6 @@
        (mapcat in/filter-assembly-paths)))
 
 
-(defn asm-load-init
-  [project init-file]
-  (in/spit-assembly-load-instruction
-    init-file
-    (assembly-search-paths project))
-  init-file)
-
-
 (defn get-eval-string
   [project]
   (str (when (get-in project pk-unchecked-math)
@@ -127,6 +119,15 @@
        (when (or (get-in project pk-warn-on-reflection)
                  (:warn-on-reflection project))
          "(set! *warn-on-reflection* true)")))
+
+
+(defn asm-load-init
+  [project init-file]
+  (in/spit-assembly-load-instruction
+    init-file
+    (assembly-search-paths project))
+  (spit init-file (str \newline (get-eval-string project)) :append true)
+  init-file)
 
 
 (defn configure-compile-env
