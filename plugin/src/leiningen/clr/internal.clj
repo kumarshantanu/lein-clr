@@ -3,10 +3,9 @@
             [clojure.string  :as str]
             [clojure.java.io :as io]
             [leiningen.core.main :as lm])
-  (:import (java.io File
-  	                Reader BufferedReader InputStream InputStreamReader
+  (:import (java.io File Reader BufferedReader InputStream InputStreamReader
                     OutputStream Writer)
-           (java.util     Enumeration Map)
+           (java.util Enumeration Map)
            (java.util.zip ZipEntry ZipFile)))
 
 
@@ -16,20 +15,20 @@
 (defn verbose
   [x & args]
   (when *verbose*
-    (apply println "[DEBUG]" x args))
+    (apply println "[lein-clr] [DEBUG]" x args))
   (flush))
 
 
 (defn warn
   [x & args]
-  (apply println "\n[WARNING!]" x args "\n")
+  (apply println "\n[lein-clr] [WARNING!]" x args "\n")
   (flush))
 
 
 (defn exit-error
   ([code msg & more] {:pre [(pos? code)]}
     (binding [*out* *err*]
-      (apply println "\n[ERROR]" msg more)
+      (apply println "\n[lein-clr] [ERROR]" msg more)
       (flush))
     (lm/abort code))
   ([code] {:pre [(pos? code)]}
@@ -38,7 +37,7 @@
 
 (defn echo
   [x]
-  (println "[--ECHO--]" x)
+  (println "[lein-clr] [--ECHO--]" x)
   (flush)
   x)
 
@@ -116,13 +115,13 @@
   "Given a toplevel directory, recursively scan .clj files and return a
   collection of namespaces."
   ([toplevel-dir parent-ns] {:pre [(vector? parent-ns)]}
-    (let [tl-dir (if (instance? File toplevel-dir)
-                     toplevel-dir
-                     (File. toplevel-dir))
-          clj-x? #(.endsWith ^String (.getName ^File %) ".clj")
-          hyphen #(.replace ^String % \_ \-)]
-      (mapcat (fn [^File each]
-                (cond
+     (let [tl-dir (if (instance? File toplevel-dir)
+                    toplevel-dir
+                    (File. toplevel-dir))
+           clj-x? #(.endsWith ^String (.getName ^File %) ".clj")
+           hyphen #(.replace ^String % \_ \-)]
+       (mapcat (fn [^File each]
+                 (cond
                   (.isDirectory each) (scan-namespaces each
                                                        (->> (.getName each)
                                                             hyphen
@@ -133,10 +132,10 @@
                                                      hyphen
                                                      (conj parent-ns)
                                                      (str/join "."))))
-                  :otherwise          []))
-              (.listFiles ^File tl-dir))))
+                       :otherwise          []))
+               (.listFiles ^File tl-dir))))
   ([toplevel-dir]
-  	(scan-namespaces toplevel-dir [])))
+     (scan-namespaces toplevel-dir [])))
 
 
 (defn as-file
@@ -274,19 +273,23 @@
                                 (pr-str f))))
 
 
+(defn path-search
+  [[path file]]
+  (let [file (resolve-path-str (vector file))
+        [p & r] (name path)
+        path (resolve-path-str (-> r str/join symbol))]
+    (if-let [w (which file path)]
+      w
+      (when-not (= p \?)
+        (exit-error 1 "Cannot locate" file "in" path)))))
+
+
 (defn resolve-path
   "If you supply a vector of args, you get back a vector.
   See also:
     resolve-path-str"
   [f template-map]
-  (let [path-search (fn [[path file]]
-                      (let [file (resolve-path-str (vector file))
-                            path (resolve-path-str (-> (rest (name path))
-                                                       str/join
-                                                       symbol))]
-                          (or (which file path)
-                              (exit-error 1 "Cannot locate" file "in" path))))
-        assert-tkey (fn [needle]
+  (let [assert-tkey (fn [needle]
                       (when-not (contains? template-map needle)
                         (exit-error 1 "Template key" needle "not found in"
                                     (pr-str template-map))))
@@ -312,14 +315,15 @@
                     (and (= 2 (count f))
                          (symbol? (first f))
                          (let [[p1 & the-name] (seq (name (first f)))]
-                           (and (= \* p1) (seq the-name))))
+                           (and (#{\* \?} p1) (seq the-name))))
                     (path-search f)
                     ;; template substitution
                     (some keyword? f)
                     (templ-subst f)
                     ;; fallback (regular) resolution
                     :otherwise
-                    (->> (map #(resolve-path % template-map) f)
+                    (->> (keep identity f)
+                         (map #(resolve-path % template-map))
                          (map resolve-path-str)
                          flatten
                          vec))
