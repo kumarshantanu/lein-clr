@@ -11,6 +11,22 @@
 
 (def ^:dynamic *verbose* false)
 
+(defn echo [x]
+  (println "[ECHO]" x (pr-str)) x)
+
+
+(defn echo->
+  [x & args]
+  (apply println "[ECHO]" (concat args [x]))
+  x)
+
+
+(defn echo->>
+  [y & args]
+  (let [msgs (drop-last (cons y args))
+        x (last args)]
+  (apply echo-> x msgs)))
+
 
 (defn verbose
   [x & args]
@@ -322,8 +338,9 @@
                     (templ-subst f)
                     ;; fallback (regular) resolution
                     :otherwise
-                    (->> (keep identity f)
+                    (->> f
                          (map #(resolve-path % template-map))
+		         (keep identity)
                          (map resolve-path-str)
                          flatten
                          vec))
