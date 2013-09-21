@@ -266,6 +266,7 @@ test     run tests in specified/all test namespaces
                      ["-i" init-file "-e" (str (get-eval-string project)
                                                expr)])]
     ;; run the tests
+    (println "Running ClojureCLR tests")
     (in/with-process-builder pb (:root project) exec
       (in/configure-load-path (.environment ^ProcessBuilder pb) allp)
       (apply in/verbose "Running: " (map pr-str exec))
