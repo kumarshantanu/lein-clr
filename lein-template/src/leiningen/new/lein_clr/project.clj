@@ -6,14 +6,14 @@
   :dependencies []
   :warn-on-reflection true
   :min-lein-version "2.0.0"
-  :plugins [[lein-clr "0.3.0-SNAPSHOT"]]
-  :clr {:cmd-templates  {:clj-exe   [#_"mono" [CLJCLR14_40 %1]]
-                         :clj-dep   [#_"mono" ["target/clr/clj/Debug 4.0" %1]]
-                         :clj-url   "https://github.com/downloads/clojure/clojure-clr/clojure-clr-1.4.0-Debug-4.0.zip"
-                         :clj-zip   "clojure-clr-1.4.0-Debug-4.0.zip"
+  :plugins [[lein-clr "0.2.1"]]
+  :clr {:cmd-templates  {:clj-exe   [[?PATH "mono"] [CLJCLR14_40 %1]]
+                         :clj-dep   [[?PATH "mono"] ["target/clr/clj/Debug 4.0" %1]]
+                         :clj-url   "http://sourceforge.net/projects/clojureclr/files/clojure-clr-1.4.1-Debug-4.0.zip/download"
+                         :clj-zip   "clojure-clr-1.4.1-Debug-4.0.zip"
                          :curl      ["curl" "--insecure" "-f" "-L" "-o" %1 %2]
-                         :nuget-ver [#_"mono" [*PATH "nuget.exe"] "install" %1 "-Version" %2]
-                         :nuget-any [#_"mono" [*PATH "nuget.exe"] "install" %1]
+                         :nuget-ver [[?PATH "mono"] [*PATH "nuget.exe"] "install" %1 "-Version" %2]
+                         :nuget-any [[?PATH "mono"] [*PATH "nuget.exe"] "install" %1]
                          :unzip     ["unzip" "-d" %1 %2]
                          :wget      ["wget" "--no-check-certificate" "--no-clobber" "-O" %1 %2]}
         ;; for automatic download/unzip of ClojureCLR,

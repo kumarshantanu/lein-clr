@@ -11,9 +11,12 @@
   * test (test selector support - doable??)
 * Script support
   * Executing scripts _a la_ lein-exec
+* `compile` as implicit as well as named task invokable at command line
+* Pre-compile and Post-compile commands; to compile C#, F# etc. sources
+* Load compiled assemblies into assembly search path
 
 
-## 2013-Sep-?? / 0.3.0
+## 2013-Sep-22 / 0.2.1
 
 * Honor `[:clr :unchecked-math]`
 * Honor `[:clr :warn-on-reflection]` and `:warn-on-reflection`
@@ -21,9 +24,6 @@
 * Project config support (`:clr` key in `project.clj`)
   * Command resolution
     * Support for optional search-within env-var value, e.g. `[?PATH "foo.exe"]`
-* [TODO] `compile` as implicit as well as named task invokable at command line
-* [TODO] Pre-compile and Post-compile commands; to compile C#, F# etc. sources
-* [TODO] Load compiled assemblies into assembly search path
 
 
 ## 2012-Nov-19 / 0.2.0
