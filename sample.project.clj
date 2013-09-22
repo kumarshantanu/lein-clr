@@ -4,7 +4,7 @@
 (defproject org.example/sample "0.1.0-SNAPSHOT"
   ;; ----- other entries omitted -----
   ;; (required) Project level usage of the lein-clr plugin is recommended
-  :plugins [[lein-clr "0.2.0"]]
+  :plugins [[lein-clr "0.2.1"]]
   ;; (optional) regular attributes used by lein-clr
   :dependencies   []  ; JAR files are decompressed and .clj files are put on load-path
   :source-paths   ["src"]
@@ -20,19 +20,20 @@
         ;; in :deps-cmds, :compile-cmd and :main-cmd below. Note that only keywords correspond
         ;; to command template keys.
         :cmd-templates  {;; uses specified file at a location pointed to by env-var CLJCLR14_40
-                         :clj-exe   [#_"mono" [CLJCLR14_40 %1]]
+                         ;; ?PATH instructs lein-clr to ignore the token if not found in PATH
+                         :clj-exe   [[?PATH "mono"] [CLJCLR14_40 %1]]
                          ;; uses specified file at location "target/clr/clj/Debug 4.0"
-                         :clj-dep   [#_"mono" ["target/clr/clj/Debug 4.0" %1]]
+                         :clj-dep   [[?PATH "mono"] ["target/clr/clj/Debug 4.0" %1]]
                          ;; ClojureCLR download URL
-                         :clj-url   "https://github.com/downloads/clojure/clojure-clr/clojure-clr-1.4.0-Debug-4.0.zip"
+                         :clj-url   "http://sourceforge.net/projects/clojureclr/files/clojure-clr-1.4.1-Debug-4.0.zip/download"
                          ;; ClojureCLR ZIP filename after download
-                         :clj-zip   "clojure-clr-1.4.0-Debug-4.0.zip"
+                         :clj-zip   "clojure-clr-1.4.1-Debug-4.0.zip"
                          ;; Fetch a file from remote-url (%2) into a local file (%1) using cURL
                          :curl      ["curl" "--insecure" "-f" "-L" "-o" %1 %2]
                          ;; Fetch specific version (%2) of a dependency (%1) using NuGet
-                         :nuget-ver [#_"mono" [*PATH "nuget.exe"] "install" %1 "-Version" %2]
+                         :nuget-ver [[?PATH "mono"] [*PATH "nuget.exe"] "install" %1 "-Version" %2]
                          ;; Fetch any/latest version of a dependency (%1) using NuGet
-                         :nuget-any [#_"mono" [*PATH "nuget.exe"] "install" %1]
+                         :nuget-any [[?PATH "mono"] [*PATH "nuget.exe"] "install" %1]
                          ;; Unzip a ZIP file (%2) into specified destination directory (%1)
                          :unzip     ["unzip" "-d" %1 %2]
                          ;; Fetch a file from remote-url (%2) into a local file (%1) using wget
