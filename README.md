@@ -21,6 +21,8 @@ and `CLOJURE_COMPILE_PATH` internally ignoring their original values.
 
 ## Usage
 
+The _lein-clr_ plugin needs a `:clr` key in `project.clj` for CLR related details. See [sample.project.clj](/kumarshantanu/lein-clr/sample.project.clj) for examples. The sub-sections below show how to get started.
+
 ### Quickstart in 3 steps -- requires `curl`/`wget` and `unzip` on `PATH`
 
 (Assuming you are on Windows with a recent version of the .NET framework or Mono.
