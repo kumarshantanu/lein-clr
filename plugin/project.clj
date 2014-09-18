@@ -1,4 +1,4 @@
-(defproject lein-clr "0.2.1"
+(defproject lein-clr "0.2.2"
   :description "Leiningen plugin to automate build tasks for ClojureCLR projects"
   :url "https://github.com/kumarshantanu/lein-clr"
   :license {:name "Eclipse Public License"

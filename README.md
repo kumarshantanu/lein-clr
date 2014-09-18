@@ -12,7 +12,7 @@ Leiningen 2 is required to use this plugin. You can use it for both .NET and Mon
 Install as a project level plugin in `project.clj`:
 
 ```clojure
-:plugins [[lein-clr "0.2.1"]]
+:plugins [[lein-clr "0.2.2"]]
 ```
 
 **Note:** `lein-clr` redefines the environment variables `CLOJURE_LOAD_PATH`
@@ -115,6 +115,6 @@ or on Twitter: [@kumarshantanu](https://twitter.com/kumarshantanu)
 
 ## License
 
-Copyright © 2012-2013 Shantanu Kumar
+Copyright © 2012-2014 Shantanu Kumar
 
 Distributed under the Eclipse Public License, the same as Clojure.

@@ -16,6 +16,11 @@
 * Load compiled assemblies into assembly search path
 
 
+## 2014-Sep-19 / 0.2.2
+
+* Omit JAR `:dependencies` from source dependencies (for ClojureCLR 1.6) - Commit SHA: 6c6f60ea9f6c62dbbc30d17d1d0132552070e5c6
+
+
 ## 2013-Sep-22 / 0.2.1
 
 * Honor `[:clr :unchecked-math]`
