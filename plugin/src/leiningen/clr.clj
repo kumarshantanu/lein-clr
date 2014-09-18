@@ -166,11 +166,6 @@
         (->> cmds
              (map #(in/resolve-path % (cmd-templates project)))
              (map #(in/run-cmd % lib))
-             dorun)
-        (in/verbose "Extracting JAR dependencies")
-        (->> (lc/get-classpath project)
-             (filter #(.isFile (File. %)))
-             (map #(in/unzip-file % src src-p))
              dorun))
       (in/verbose "Not fetching dependencies. Run `lein clean` to re-fetch."))))
 
